@@ -1,4 +1,7 @@
-// TODO: Define a City class with name and id properties
+import weatherService from './weatherService';
+import * as fs from 'fs/promises';
+import * as path from 'path';
+
 class City {
   name: string;
   id: string;  
@@ -9,32 +12,74 @@ class City {
   }
 };
 
-// TODO: Complete the HistoryService class
 class HistoryService {
-  getWeatherbyHistory(citySearch: any) {
-    throw new Error('Method not implemented.');
-  }
-  // TODO: Define a read method that reads from the searchHistory.json file
-  private async read() {
-    // check searchHistory.json file
-  }
+  async getWeatherbyHistory(citySearch: any) {
+    try {
+      const cities = await this.getCities();
+      const city =cities.find((city) => city.name.toLowerCase() === citySearch.toLowerCase());
+      if (!city) {
+        throw new Error ('City not found in search history');
+      }
+      const weatherData = await weatherService.getWeatherForCity(city.name);
 
-  // TODO: Define a write method that writes the updated cities array to the searchHistory.json file
-  private async write(cities: City[]) {}
-  // cache a city in local storage when updated
-  // i think writeFile is wrong here but there it is anyways
+      return weatherData;
+    } catch (error) {
+      console.error("Error in getWeatherbyHistory", error);
+      throw error;
+
+    }
+  }
   
-  // keep city
-  // write to array in searchHistory.json
+  private async read() {
+    try {
+      const filePath = path.resolve('searchHistory.json');
+      const data = await fs.readFile(filePath, "utf-8");
+      return JSON.parse(data);
+    } catch (error) {
+      if (error === "ENOENT") {
+      console.error("Error reading searchHistory.json file");
+      return [];
+    }
+    console.error("Error in (read)", error);
+    throw error;
+  }
+  }
+  // TODO: Define a write method that writes the updated cities array to the searchHistory.json file
+  private async write(cities: City[]) {
+    try {
+      const filePath = path.resolve('searchHistory.json');
+      await fs.writeFile(filePath, JSON.stringify(cities, null, 2));
+    } catch (error) {
+      console.error('Error writing to searchHistory.json file', error);
+      throw error;
+    }
+  }
 
   // TODO: Define a getCities method that reads the cities from the searchHistory.json file and returns them as an array of City objects
-  async getCities() {}
-  // read cities from searchHistory.json 
-  // return as an array of City objects
+  async getCities(): Promise<City[]> {
+    try {
+      const citiesArray = await this.read();
+      return citiesArray.map(
+      (cityData: {name: string; id: string }) => new City(cityData.name, cityData.id)
+    );
+    } catch (error) {
+      console.error('Error getting cities from searchHistory.json', error);
+    throw error;
+    }
+  }
 
   // TODO Define an addCity method that adds a city to the searchHistory.json file
-  async addCity(city: string) {}
-  // add city to searchHistory.json file
+  async addCity(city: City) {
+    try {
+      const cities = await this.getCities();
+      cities.push(city);
+      await this.write(cities);
+      console.log(`${city.name} added to search history`);
+    } catch (error) {
+      console.error("Error in (add city)", error);
+      throw error;
+    }
+  }
 
   // * BONUS TODO: Define a removeCity method that removes a city from the searchHistory.json file
   // async removeCity(id: string) {}
