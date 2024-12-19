@@ -11,5 +11,5 @@ Type in whichever city you will be traveling to, and the site will give the user
 ## Contributers
 Eliana Liantonio - ElianaScript
 
-##License
+## License
 Please see LICENSE in repo (MIT).
