@@ -1,5 +1,4 @@
 import dotenv from 'dotenv';
-import { query } from 'express';
 dotenv.config();
 
 interface Coordinates {
@@ -10,7 +9,7 @@ interface Coordinates {
 class Weather {
 city: string | undefined;
 date: number | undefined;
-icon: symbol | undefined;
+icon: string | undefined;
 iconDescription: string | undefined;
 tempf: number | undefined;
 windSpeed: number | undefined;
@@ -40,11 +39,9 @@ private async fetchLocationData(query: string): Promise<any> {
     }
   }
 
-  public async getLocationData() {
-
-    const url =`${this.baseURL}/data/2.5/weather?q=${query}&appid=${this.apiKey}`;
+  public async getLocationData(query: string) {
     try {
-      const data = await this.fetchLocationData(url);
+      const data = await this.fetchLocationData(`${this.baseURL}/data/2.5/weather?q=${query}&appid=${this.apiKey}`);
       console.log('Data recieved ', data)
     } catch (error) {
       console.error('Error in getData:', error );
@@ -65,12 +62,12 @@ private async destructureLocationData(locationData: Coordinates): Promise<Coordi
     }
 
     public async getDestructuredLocation (locationData: Coordinates): Promise<Coordinates> {
-      return await this.destructureLocationData(locationData);
+      return this.destructureLocationData(locationData);
     }
  
-private async buildGeocodeQuery(_locationData: Coordinates): Promise<Coordinates>  {
+private async buildGeocodeQuery(cityName: string, stateCode?: string, countryCode?: string, limit: number=1 ): Promise<Coordinates>  {
   try {
-    const response = await fetch (`${this.baseURL}/geo/1.0/direct?q=${this.cityName}, ${this.stateCode}, ${this.countryCode}&limit=${this.imit}&appid=${this.apiKey}`);
+    const response = await fetch (`${this.baseURL}/geo/1.0/direct?q=${cityName}, ${stateCode}, ${countryCode}&limit=${limit}&appid=${this.apiKey}`);
     const data = await response.json();
     return {latitude: data[0].lat, longitude:data[0].lon};
   } catch (error) {
@@ -80,15 +77,15 @@ private async buildGeocodeQuery(_locationData: Coordinates): Promise<Coordinates
 
 }
 
-public async getGeocodeQuery(locationData: Coordinates): Promise<Coordinates> {
-  return await this.buildGeocodeQuery(locationData)
+public async getGeocodeQuery(cityName: string, stateCode?: string, countryCode?: string, limit: number=1): Promise<Coordinates> {
+  return this.buildGeocodeQuery(cityName, stateCode, countryCode, limit)
 }
 
 
-  private async buildWeatherQuery(coordinates: Coordinates): Promise<string> {
+private async buildWeatherQuery(coordinates: Coordinates): Promise<string> {
     try {
       const{latitude, longitude} = coordinates;
-      const response = await fetch (`${this.baseUrl}/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${this.apiKey}`);
+      const response = await fetch (`${this.baseURL}/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${this.apiKey}`);
       const data = await response.json();
       return data;
     } catch (error) {
@@ -98,7 +95,7 @@ public async getGeocodeQuery(locationData: Coordinates): Promise<Coordinates> {
    }
   
    public async getWeatherQuery(coordinates: Coordinates): Promise<string> {
-    return await this.buildWeatherQuery(coordinates);
+    return this.buildWeatherQuery(coordinates);
    }
 
 
@@ -115,7 +112,7 @@ public async getGeocodeQuery(locationData: Coordinates): Promise<Coordinates> {
   }
 
   public async getfdLocationData(query:string): Promise<Coordinates> {
-    return await this.fetchAndDestructureLocationData(query);
+    return this.fetchAndDestructureLocationData(query);
   }
 
   private async fetchWeatherData(coordinates: Coordinates): Promise<any> {
@@ -130,7 +127,7 @@ public async getGeocodeQuery(locationData: Coordinates): Promise<Coordinates> {
   }
 
   public async getWeatherData(coordinates: Coordinates):Promise<any> {
-    return await this.fetchWeatherData(coordinates);
+    return this.fetchWeatherData(coordinates);
   }
  
   private async parseCurrentWeather(response: any): Promise<any>{
@@ -145,7 +142,7 @@ public async getGeocodeQuery(locationData: Coordinates): Promise<Coordinates> {
   }
 
   public async getpCurrentWeather(response: any): Promise<any> {
-    return await this.parseCurrentWeather(response);
+    return this.parseCurrentWeather(response);
   }
   
   private async buildForecastArray(currentWeather: Weather, weatherData: any[]): Promise<Weather[]>{ 
@@ -168,21 +165,21 @@ public async getGeocodeQuery(locationData: Coordinates): Promise<Coordinates> {
 }
 
 public async getForecastArray(currentWeather: Weather, weatherData: any[]): Promise<Weather[]> {
-  return await this.buildForecastArray(currentWeather, weatherData);
+  return this.buildForecastArray(currentWeather, weatherData);
 }
 
   async getWeatherForCity(cityName: string): Promise<Weather[]> {
     try {
-      const response = await fetch (`${this.baseURL}/data/2.5/forecast?q=${cityName}&unit=metric&appid=${this.apiKey}`);
+      const response = await fetch (`${this.baseURL}/data/2.5/forecast?q=${cityName}&units=metric&appid=${this.apiKey}`);
       const data = await response.json();
       console.log(data.list[0]);
 
       const forecastArray: Weather[] = data.list.map((forecast: any) => ({
-        city: forecast.main.city,
-        date: forecast.main.date,
-        icon: forecast.main.icon,
-        iconDescription: forecast.icon.description,
-        tempF: forecast.main.tempF,
+        city: data.city.name,
+        date: forecast.dt_txt,
+        icon: forecast.weather[0].icon,
+        iconDescription: forecast.weather[0].description,
+        tempF: forecast.main.temp,
         wind: forecast.wind.speed,
         humidity: forecast.main.humidity,
       }));
