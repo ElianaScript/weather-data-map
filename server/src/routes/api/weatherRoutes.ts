@@ -5,30 +5,19 @@ import HistoryService from '../../service/historyService.js';
 import WeatherService from '../../service/weatherService.js';
 
 
-router.post('/city', async (req, res) => {
-  const {city} =req.body;
+router.post('/', async (req, res) => {
+  const {cityName} =req.body;
 
   try {
-    const weatherData = await WeatherService.getWeatherbyCity(city);
+    const weatherData = await WeatherService.getWeatherForCity(cityName);
     res.json(weatherData);
   } catch (error) {
-    console.log('Error');
+    console.error(error);
+    res.json(error);
   }
 });
 
-
- router.get('/weather', async (req, res) => {
-  const {city} = req.query;
-
-  try {
-    const weatherData = await WeatherService.getWeatherbyCity(city);
-    res.json(weatherData);
-  } catch (error) {
-    console.log('Error');
-  }
- });
-
-router.post('/city', async (req, res) => {
+/*router.post('/city', async (req, res) => {
   const {citySearch} = req.body;
 
   try {
@@ -37,9 +26,9 @@ router.post('/city', async (req, res) => {
   } catch (error) {
     console.log('Error');
   }
-});
+});*/
 
-router.get('/history', async (req, res) => {
+router.get('history', async (req, res) => {
   const history = req.body;
 
   try {

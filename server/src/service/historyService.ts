@@ -1,4 +1,4 @@
-import weatherService from './weatherService';
+import weatherService from './weatherService.js';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
@@ -32,7 +32,7 @@ class HistoryService {
   
   private async read() {
     try {
-      const filePath = path.resolve('searchHistory.json');
+      const filePath = path.resolve('../searchHistory.json');
       const data = await fs.readFile(filePath, "utf-8");
       return JSON.parse(data);
     } catch (error) {

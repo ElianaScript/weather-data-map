@@ -8,9 +8,13 @@ interface Coordinates {
 };
 
 class Weather {
-  temperature!: number;
-  wind!: number;
-  humidity!: number;
+city: string | undefined;
+date: number | undefined;
+icon: symbol | undefined;
+iconDescription: string | undefined;
+tempf: number | undefined;
+windSpeed: number | undefined;
+humidity: number | undefined;
 };
 
 class WeatherService {
@@ -150,8 +154,12 @@ public async getGeocodeQuery(locationData: Coordinates): Promise<Coordinates> {
 
     for(const data of weatherData) {
       const forecast: Weather = {
-      temperature: data.temperature,
-      wind: data.wind,
+      city: data.city,
+      date: data.date,
+      icon: data.icon,
+      iconDescription: data.iconDescription,
+      tempf: data.tempF,
+      windSpeed: data.windSpeed,
       humidity: data.humidity,
     };
   forecastArray.push(forecast);
@@ -163,14 +171,19 @@ public async getForecastArray(currentWeather: Weather, weatherData: any[]): Prom
   return await this.buildForecastArray(currentWeather, weatherData);
 }
 
-  async getWeatherForCity(city: string): Promise<Weather[]> {
+  async getWeatherForCity(cityName: string): Promise<Weather[]> {
     try {
-      const response = await fetch (`${this.baseURL}/data/2.5/forecast?q=${city}&unit=metric&appid=${this.apiKey}`);
+      const response = await fetch (`${this.baseURL}/data/2.5/forecast?q=${cityName}&unit=metric&appid=${this.apiKey}`);
       const data = await response.json();
+      console.log(data.list[0]);
 
       const forecastArray: Weather[] = data.list.map((forecast: any) => ({
-        temperature: forecast.main.temp,
-        wind: forecast.main.wind,
+        city: forecast.main.city,
+        date: forecast.main.date,
+        icon: forecast.main.icon,
+        iconDescription: forecast.icon.description,
+        tempF: forecast.main.tempF,
+        wind: forecast.wind.speed,
         humidity: forecast.main.humidity,
       }));
 

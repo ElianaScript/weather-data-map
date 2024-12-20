@@ -30,6 +30,6 @@ const destructureLocationData = {
 };
 // TODO: Create buildGeocodeQuery method
 const buildGeocodeQuery = {
-//private buildGeocodeQuery(): string {}
+//private  buildGeocodeQuery(): Promise<string> {}
 };
 export default new WeatherService();
